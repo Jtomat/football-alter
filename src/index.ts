@@ -2,7 +2,7 @@
  * Required External Modules
  */
 import * as dotenv from "dotenv";
-import express from "express";
+import express, {Router} from "express";
 import cors from "cors";
 import helmet from "helmet";
 import "reflect-metadata";
@@ -11,7 +11,10 @@ import BasicController from "./core/controllers/basic-controller";
 import {TYPE_ORM_OPTIONS} from "./core/shared/constants";
 import BasicRepository from "./core/repositories/basic-repository";
 import {RouterBuilder} from "./core/controllers/router-builder";
-import {Child, User} from "./entities";
+import {User} from "./entities/examples/User";
+import {Child} from "./entities/examples/Child";
+import {loadTeam} from "./controllers/team";
+import {loadTournament} from "./controllers/tournament";
 
 /**
  * Example classes
@@ -54,14 +57,9 @@ const app = express();
 createConnection(TYPE_ORM_OPTIONS).then((con)=> {
     GLOBAL_DB_CONNECTION = con;
 
-    const router = RouterBuilder.build([
-        {
-            controller: new UserController(GLOBAL_DB_CONNECTION),
-            children: [
-                {controller: new ChildController(GLOBAL_DB_CONNECTION)},
-            ]
-        },
-    ])
+    const router = Router();
+    router.use(loadTeam(con));
+    router.use(loadTournament(con))
     app.use('/api', router);
     console.log(`DB connected: `, GLOBAL_DB_CONNECTION.isConnected)
 
@@ -69,6 +67,7 @@ createConnection(TYPE_ORM_OPTIONS).then((con)=> {
 /**
  *  App Configuration
  */
+app.use('/static', express.static(__dirname+'/static'))
 app.use(helmet());
 app.use(cors());
 app.use(express.json());

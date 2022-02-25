@@ -1,9 +1,8 @@
-import {FindManyOptions, Repository, SelectQueryBuilder} from "typeorm";
+import {EntityRepository, FindManyOptions, Repository, SelectQueryBuilder} from "typeorm";
 import {Filter, Pager} from "../shared/constants";
 import {DTO, EntityKey} from "../models/dto";
-import {Child, User} from "../../entities";
-
-/** Basic class of controller's repository for {@link DTO entity} */
+/** Basic class of controller's repositories for {@link DTO entity} */
+@EntityRepository()
 export default class BasicRepository<T extends DTO> extends Repository<T>{
 
     /** Name of DB table */

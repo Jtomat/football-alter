@@ -10,7 +10,7 @@ export default class BasicController<T extends BasicRepository<DTO>> {
 
     /** BasicRepository to execute DB commands */
     protected _repository: BasicRepository<DTO>;
-    /** Special url path to use instead repository's one */
+    /** Special url path to use instead repositories's one */
     protected _path: string;
     /** Router which contains all routes of controller */
     protected _router = Router({mergeParams: true});
