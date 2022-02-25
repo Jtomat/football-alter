@@ -1,6 +1,6 @@
-# BackEnd-Core
+# FootBoiCheck alternative BackEnd
 
-###### Core BackEnd project based on:
+###### Based on:
 * Express
 * TypeScript
 * TypeOrm
