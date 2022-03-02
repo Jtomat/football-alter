@@ -57,7 +57,7 @@ const app = express();
 createConnection(TYPE_ORM_OPTIONS).then((con)=> {
     GLOBAL_DB_CONNECTION = con;
 
-    const router = Router();
+    const router = Router({mergeParams: true});
     router.use(loadTeam(con));
     router.use(loadTournament(con))
     app.use('/api', router);

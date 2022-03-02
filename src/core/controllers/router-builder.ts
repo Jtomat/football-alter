@@ -4,7 +4,7 @@ import {RouteConfig} from "../shared/constants";
 export class RouterBuilder {
 
     static build(config: Array<RouteConfig>): Router {
-        const router = Router()
+        const router = Router({mergeParams: true})
         config.forEach((route: RouteConfig)=>{
             router.use(route.controller.path, RouterBuilder.resolveRoute(route))
         });
@@ -15,7 +15,7 @@ export class RouterBuilder {
         const parentRouter = route.controller.router;
         if (route.children) {
             route.children.forEach((childRoute: RouteConfig) => {
-                parentRouter.use(`/:key${childRoute.controller.path}`, RouterBuilder.resolveRoute(childRoute));
+                parentRouter.use(`/:${route.controller.repositoryKey}${childRoute.controller.path}`, RouterBuilder.resolveRoute(childRoute));
             });
         }
         return parentRouter;

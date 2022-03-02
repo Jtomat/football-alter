@@ -27,6 +27,12 @@ export class PlayerController extends BasicController<PlayerRepository> {
         return  res.json(POSITION)
     }
 
+
+    async methodGetAll(req: Request, res: Response, next: any): Promise<Response> {
+        const entities = await (this._repository as BasicRepository<Player>).find({where:{team: {id:req.params.keyteam}}})
+        return res.json(entities);
+    }
+
     async getAllSorted(req: Request, res: Response, next: any): Promise<Response> {
         const entity = await (this._repository as BasicRepository<Player>).find({
             order:{number: "ASC"}});

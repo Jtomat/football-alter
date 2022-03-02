@@ -22,6 +22,10 @@ export default class BasicController<T extends BasicRepository<DTO>> {
     get path(): string {
         return this._path ?? this._repository.urlSegment;
     }
+    /** Controller key name in router */
+    get repositoryKey() {
+        return 'key'+this._repository.tableName;
+    }
 
     /**
      * @param connection - current {@link Connection connection} to database
@@ -46,14 +50,15 @@ export default class BasicController<T extends BasicRepository<DTO>> {
 
         this._router.get('/', this.methodGetAll);
         this._router.post('/', this.methodPost);
-        this._router.get('/:key', this.methodGet);
-        this._router.put('/:key', this.methodPut);
-        this._router.delete('/:key', this.methodDelete);
+        this._router.get('/:'+this.repositoryKey, this.methodGet);
+        this._router.put('/:'+this.repositoryKey, this.methodPut);
+        this._router.delete('/:'+this.repositoryKey, this.methodDelete);
     }
 
     /** Basic method of get by id */
     async methodGet(req: Request, res: Response, next: any): Promise<Response> {
-        const id = Number(req.params.key);
+        console.log(req.params)
+        const id = Number(req.params[this.repositoryKey]);
         if (_.isNaN(id)) {
             res.status(500).send({message: "Invalid entity id."});
             return;
@@ -78,7 +83,7 @@ export default class BasicController<T extends BasicRepository<DTO>> {
     }
     /** Basic method of delete by id */
     async methodDelete(req: Request, res: Response, next: any): Promise<Response> {
-        const id = Number(req.params.key);
+        const id = Number(req.params[this.repositoryKey]);
         if (_.isNaN(id)) {
             res.sendStatus(500);
             return;
@@ -90,7 +95,7 @@ export default class BasicController<T extends BasicRepository<DTO>> {
     /** Basic method of put by id */
     async methodPut(req: Request, res: Response, next: any): Promise<Response> {
         const entity =  req.body;
-        entity.id = Number(req.params.key);
+        entity.id = Number(req.params[this.repositoryKey]);
         if(_.isNaN(entity.id)) {
             res.sendStatus(500);
             return;

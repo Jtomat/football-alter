@@ -14,6 +14,10 @@ export default class BasicRepository<T extends DTO> extends Repository<T>{
         return this._urlSegment;
     }
 
+    get tableName(){
+        return this._tableName;
+    }
+
     constructor() {
         super();
     }
