@@ -56,7 +56,7 @@ export default class BasicRepository<T extends DTO> extends Repository<T>{
      * @param key - {@link EntityKey} of selected {@link DTO entity}
      */
     async getEntityWithRelations(key: EntityKey) {
-        const relations = []
+        let relations = []
         // collect relation properties
         this.metadata.relations.forEach(rel=>{
             if (rel.entityMetadata.tableName === this._tableName) {
@@ -65,6 +65,8 @@ export default class BasicRepository<T extends DTO> extends Repository<T>{
                 })
             }
         })
+        // @ts-ignore downlevel convert operation
+        relations = [...new Set(relations)];
         return (await this.find({relations, where: {id: this.getEntityID(key)}} as FindManyOptions))[0];
     }
 
