@@ -57,7 +57,6 @@ export default class BasicController<T extends BasicRepository<DTO>> {
 
     /** Basic method of get by id */
     async methodGet(req: Request, res: Response, next: any): Promise<Response> {
-        console.log(req.params)
         const id = Number(req.params[this.repositoryKey]);
         if (_.isNaN(id)) {
             res.status(500).send({message: "Invalid entity id."});

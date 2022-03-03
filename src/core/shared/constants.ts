@@ -42,3 +42,5 @@ export const TYPE_ORM_OPTIONS = {
 }
 /** Routing config type */
 export type RouteConfig = {controller: BasicController<BasicRepository<DTO>>, children?: Array<RouteConfig>}
+
+export const GET_ALL_PREFIX = 'all'

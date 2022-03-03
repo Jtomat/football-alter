@@ -5,6 +5,8 @@ import {Request, Response} from "express";
 import {GROUP} from "../../entities/enums";
 import BasicRepository from "../../core/repositories/basic-repository";
 import {Participant} from "../../entities/participant";
+import {Player} from "../../entities/player";
+import {GET_ALL_PREFIX} from "../../core/shared/constants";
 
 export class ParticipantController extends BasicController<ParticipantRepository> {
     constructor(connection: Connection) {
@@ -12,15 +14,27 @@ export class ParticipantController extends BasicController<ParticipantRepository
         this.groupsGetAll = this.groupsGetAll.bind(this);
         this.participantByGroup = this.participantByGroup.bind(this)
         this.getParticipantShortname = this.getParticipantShortname.bind(this)
-
         this.router.get('/groups', this.groupsGetAll)
         this.router.get('/groups/:key', this.participantByGroup)
-        this.router.get('/shortname/:key', this.getParticipantShortname)
+        this.router.get(`/:${this.repositoryKey}/shortname/`, this.getParticipantShortname)
         this.initDefault()
     }
 
     async groupsGetAll(req: Request, res: Response, next: any): Promise<Response> {
         return  res.json(GROUP)
+    }
+
+    async methodGetAll(req: Request, res: Response, next: any): Promise<Response> {
+        let entities = []
+        if (req.params.keytournament != GET_ALL_PREFIX) {
+            entities = await (this._repository as BasicRepository<Participant>)
+                .find({where: {team: {id: req.params.keytournament}}})
+        }
+        else{
+            entities = await (this._repository as BasicRepository<Participant>).getAllEntities()
+        }
+
+        return res.json(entities);
     }
 
     // Надо будет проверить, как работает
@@ -55,7 +69,7 @@ export class ParticipantController extends BasicController<ParticipantRepository
     }
 
     async getParticipantShortname(req: Request, res: Response, next: any): Promise<Response> {
-        const key = String(req.params.key);
+        const key = String(req.params[this.repositoryKey]);
         if (!key) {
             res.status(500).send({message: "Invalid entity id."});
             return;

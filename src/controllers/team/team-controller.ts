@@ -24,11 +24,12 @@ export class TeamController extends BasicController<TeamRepository> {
     }
 
     async getTeamByRegion(req: Request, res: Response, next: any): Promise<Response> {
-        const key = String(req.params.key);
+        let key = String(req.params.key);
         if (!key) {
             res.status(500).send({message: "Invalid entity id."});
             return;
         }
+        key = key[0].toLocaleUpperCase() + key.slice(1)
         const entity = await (this._repository as BasicRepository<Team>).find({where: {region: key},
             order:{name: "ASC"}});
         if(!entity) {

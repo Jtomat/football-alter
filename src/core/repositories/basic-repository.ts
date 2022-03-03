@@ -65,12 +65,11 @@ export default class BasicRepository<T extends DTO> extends Repository<T>{
         this.metadata.relations.forEach(rel=>{
             if (rel.entityMetadata.tableName === this._tableName) {
                 rel.entityMetadata.relations.forEach(relMeta=>{
-                    relations.push(relMeta.propertyPath)
+                    if (!relations.includes(relMeta.propertyPath))
+                        relations.push(relMeta.propertyPath)
                 })
             }
         })
-        // @ts-ignore downlevel convert operation
-        relations = [...new Set(relations)];
         return (await this.find({relations, where: {id: this.getEntityID(key)}} as FindManyOptions))[0];
     }
 

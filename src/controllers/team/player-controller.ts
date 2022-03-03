@@ -8,6 +8,8 @@ import {POSITION} from "../../entities/enums";
 import BasicRepository from "../../core/repositories/basic-repository";
 import {Team} from "../../entities/team";
 import {Player} from "../../entities/player";
+import {GET_ALL_PREFIX} from "../../core/shared/constants";
+import {Participant} from "../../entities/participant";
 
 // TODO: See example
 export class PlayerController extends BasicController<PlayerRepository> {
@@ -29,7 +31,15 @@ export class PlayerController extends BasicController<PlayerRepository> {
 
 
     async methodGetAll(req: Request, res: Response, next: any): Promise<Response> {
-        const entities = await (this._repository as BasicRepository<Player>).find({where:{team: {id:req.params.keyteam}}})
+        let entities = []
+        if (req.params.keyteam != GET_ALL_PREFIX) {
+            entities = await (this._repository as BasicRepository<Player>)
+                .find({where: {team: {id: req.params.keyteam}}})
+        }
+        else{
+            entities = await (this._repository as BasicRepository<Player>).getAllEntities()
+        }
+
         return res.json(entities);
     }
 

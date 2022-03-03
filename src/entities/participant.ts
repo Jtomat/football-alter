@@ -1,5 +1,5 @@
 import {DTO} from "../core/models/dto";
-import {Column, Entity, ManyToOne, OneToMany} from "typeorm";
+import {AfterLoad, Column, Entity, ManyToOne, OneToMany} from "typeorm";
 import {Tournament} from "./tournament";
 import {Team} from "./team";
 import {GROUP} from "./enums";
@@ -17,4 +17,10 @@ export class Participant extends DTO {
     asGuest: Game[];
     @OneToMany(type => Game, game=>game.homeTeam)
     asHome: Game[];
+    // Кастомное поле в сущности, пример:
+    // customField: string;
+    // @AfterLoad()
+    // custom() {
+    //     this.customField = `${this.team?.name} ${this.team?.id} !!! ${this.group}`
+    // }
 }
