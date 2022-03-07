@@ -12,7 +12,7 @@ export class Player extends DTO {
     lastName: string;
     @Column()
     number: number;
-    @Column()
+    @Column({nullable:true})
     birthDay:Date;
     @Column({type:'enum', enum:POSITION, default:POSITION.DEFENDER})
     position: POSITION;

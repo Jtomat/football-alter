@@ -15,7 +15,6 @@ import {User} from "./entities/examples/User";
 import {Child} from "./entities/examples/Child";
 import {loadTeam} from "./controllers/team";
 import {loadTournament} from "./controllers/tournament";
-
 /**
  * Example classes
  */
@@ -50,6 +49,7 @@ if (!process.env.PORT) {
 export let GLOBAL_DB_CONNECTION: Connection;
 
 const PORT: number = parseInt(process.env.PORT as string, 10);
+
 const app = express();
 /**
  * DB connection and route configuration
@@ -69,7 +69,8 @@ createConnection(TYPE_ORM_OPTIONS).then((con)=> {
  */
 app.use('/static', express.static(__dirname+'/static'))
 app.use(helmet());
-app.use(cors());
+app.use(cors())
+
 app.use(express.json());
 /**
  * Server Activation
