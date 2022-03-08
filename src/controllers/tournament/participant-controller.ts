@@ -14,9 +14,11 @@ export class ParticipantController extends BasicController<ParticipantRepository
         this.groupsGetAll = this.groupsGetAll.bind(this);
         this.participantByGroup = this.participantByGroup.bind(this)
         this.getParticipantShortname = this.getParticipantShortname.bind(this)
+        this.getTeamsAllocated = this.getTeamsAllocated.bind(this)
         this.router.get('/groups', this.groupsGetAll)
         this.router.get('/groups/:key', this.participantByGroup)
         this.router.get(`/:${this.repositoryKey}/shortname/`, this.getParticipantShortname)
+        this.router.get('/allocated', this.getTeamsAllocated)
         this.initDefault()
     }
 
@@ -28,7 +30,7 @@ export class ParticipantController extends BasicController<ParticipantRepository
         let entities = []
         if (req.params.keytournament != GET_ALL_PREFIX) {
             entities = await (this._repository as BasicRepository<Participant>)
-                .find({where: {team: {id: req.params.keytournament}}})
+                .find({where: {tournament: {id: req.params.keytournament}}})
         }
         else{
             entities = await (this._repository as BasicRepository<Participant>).getAllEntities()
@@ -44,11 +46,19 @@ export class ParticipantController extends BasicController<ParticipantRepository
             res.status(500).send({message: "Invalid entity id."});
             return;
         }
-        const entity = await (this._repository as BasicRepository<Participant>).find({where: {group: key},
+        let entity = []
+        if (req.params.keytournament != GET_ALL_PREFIX)
+         entity = await (this._repository as BasicRepository<Participant>).find({where: {group: key,
+                tournament: {id: req.params.keytournament}},
             order:{id: "ASC"}});
-
+        else
+        {
+            entity = await (this._repository as BasicRepository<Participant>).find({where: {group: key,
+                    },
+                order:{id: "ASC"}});
+        }
         if(!entity) {
-            res.status(404).send({message:"Entity with such region doesn't found."});
+            res.status(404).send({message:"Entity with such group doesn't found."});
         }
 
         let result = []
@@ -76,10 +86,14 @@ export class ParticipantController extends BasicController<ParticipantRepository
         }
 
         const entity = await (this._repository as BasicRepository<Participant>).findOne({where: {id: key}});
-
-        const entities = await (this._repository as BasicRepository<Participant>).find(
-            {where: {group: entity.group}});
-
+        let entities = []
+        if (req.params.keytournament != GET_ALL_PREFIX)
+            entities = await (this._repository as BasicRepository<Participant>).find(
+            {where: {group: entity.group, tournament: {id: req.params.keytournament}}});
+        else
+        {
+            res.status(500).send({message: "Invalid tournament id."});
+        }
         const num = entities.findIndex((value, index) => {if (value === entity) {return index + 1}});
 
         const result = {shortname: String(entity.group) + String(num), participant: entity};
@@ -87,6 +101,38 @@ export class ParticipantController extends BasicController<ParticipantRepository
         return  res.json(result)
     }
 
+
+    async getTeamsAllocated(req: Request, res: Response, next: any): Promise<Response> {
+        if (req.params.keytournament != GET_ALL_PREFIX) {
+            let allocCount = 0
+            for(let i in GROUP)
+            {
+                const entity = await (this._repository as BasicRepository<Participant>).find({where: {group: i,
+                        tournament: {id: req.params.keytournament}},
+                    order:{id: "ASC"}});
+
+                if(!entity) {
+                }
+                else if(entity.length === 4)
+                {
+                    allocCount += 1
+                }
+            }
+            if(allocCount === 6)
+            {
+                return res.status(404).send({message:"Yes"});
+            }
+        }
+        else{
+            return res.status(404).send({message:"Entity with such tournamentId doesn't found."});
+        }
+
+        return res.status(404).send({message:"No"});
+    }
+
+    async getRandomAllocation(req: Request, res: Response, next: any): Promise<Response> { //!!!!!!!!!!!!!!!
+        return res.status(404).send({message:""});
+    }
     // на фронте?
     // async participantsChangePlaceWithinGroup(req: Request, res: Response, next: any): Promise<Response> {
     //    return
