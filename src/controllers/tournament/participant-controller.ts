@@ -40,7 +40,6 @@ export class ParticipantController extends BasicController<ParticipantRepository
         return res.json(entities);
     }
 
-    // Надо будет проверить, как работает
     async participantByGroup(req: Request, res: Response, next: any): Promise<Response> {
         const key = String(req.params.key);
         if (!key) {
