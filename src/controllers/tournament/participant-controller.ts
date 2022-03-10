@@ -7,6 +7,7 @@ import BasicRepository from "../../core/repositories/basic-repository";
 import {Participant} from "../../entities/participant";
 import {Player} from "../../entities/player";
 import {GET_ALL_PREFIX} from "../../core/shared/constants";
+import {GameController} from "./game-controller";
 
 export class ParticipantController extends BasicController<ParticipantRepository> {
     constructor(connection: Connection) {
@@ -110,17 +111,15 @@ export class ParticipantController extends BasicController<ParticipantRepository
                 const entity = await (this._repository as BasicRepository<Participant>).find({where: {group: i,
                         tournament: {id: req.params.keytournament}},
                     order:{id: "ASC"}});
-
-                if(!entity) {
-                }
-                else if(entity.length === 4)
+            if(entity?.length === 4)
                 {
                     allocCount += 1
                 }
             }
-            if(allocCount === 6)
+            if(allocCount === 6) //- в каждой группе есть 4 команды, все заполнено.
             {
-                return res.status(404).send({message:"Yes"});
+                await (new GameController(this._repository.manager.connection)).createGroupGames(req)
+                return res.json({message:"Yes"});
             }
         }
         else{
@@ -129,6 +128,7 @@ export class ParticipantController extends BasicController<ParticipantRepository
 
         return res.status(404).send({message:"No"});
     }
+
 
     async getRandomAllocation(req: Request, res: Response, next: any): Promise<Response> { //!!!!!!!!!!!!!!!
         return res.status(404).send({message:""});

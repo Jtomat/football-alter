@@ -11,16 +11,16 @@ export class Game extends DTO {
     homeTeam:Participant;
     @ManyToOne(type => Participant, part=>part.asGuest)
     guestTeam:Participant;
-    @Column()
+    @Column({default:0})
     homeTeamResult: number;
-    @Column()
+    @Column({default:0})
     guestTeamResult: number;
     @Column({type:"enum",enum:STAGE, default:STAGE.GROUP_STAGE})
     stage:STAGE;
     @OneToMany(type => Event, event=>event.game)
     events: Event[]
-    @Column()
+    @Column({default:false})
     started:boolean;
-    @Column()
+    @Column({default:false})
     finished:boolean;
 }
