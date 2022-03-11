@@ -5,7 +5,6 @@ import {Request, Response} from "express";
 import {GROUP} from "../../entities/enums";
 import BasicRepository from "../../core/repositories/basic-repository";
 import {Participant} from "../../entities/participant";
-import {Player} from "../../entities/player";
 import {GET_ALL_PREFIX} from "../../core/shared/constants";
 import {GameController} from "./game-controller";
 
@@ -16,10 +15,12 @@ export class ParticipantController extends BasicController<ParticipantRepository
         this.participantByGroup = this.participantByGroup.bind(this)
         this.getParticipantShortname = this.getParticipantShortname.bind(this)
         this.getTeamsAllocated = this.getTeamsAllocated.bind(this)
+        this.getRandomAllocation = this.getRandomAllocation.bind(this)
         this.router.get('/groups', this.groupsGetAll)
         this.router.get('/groups/:key', this.participantByGroup)
         this.router.get(`/:${this.repositoryKey}/shortname/`, this.getParticipantShortname)
         this.router.get('/allocated', this.getTeamsAllocated)
+        this.router.get('/randomAllocation',this.getRandomAllocation)
         this.initDefault()
     }
 
@@ -128,9 +129,51 @@ export class ParticipantController extends BasicController<ParticipantRepository
         return res.status(404).send({message:"No"});
     }
 
+    shuffle(array){
+        let i = array.length,
+            j = 0,
+            temp;
+        while (i--){
+            j = Math.floor(Math.random() * (i+1));
 
-    async getRandomAllocation(req: Request, res: Response, next: any): Promise<Response> { //!!!!!!!!!!!!!!!
-        return res.status(404).send({message:""});
+            // swap randomly chosen element with current element
+            temp = array[i];
+            array[i] = array[j];
+            array[j] = temp;
+        }
+
+        return array;
+    }
+
+    async getRandomAllocation(req: Request, res: Response, next: any): Promise<Response> {
+        if (req.params.keytournament != GET_ALL_PREFIX) {
+            let entities = await (this._repository as BasicRepository<Participant>)
+                .find({where: {tournament: {id: req.params.keytournament}}})
+            let indexes = []
+            entities.forEach(val => {
+                indexes.push(val.id)
+            })
+            indexes = this.shuffle(indexes)
+            let k = 0;
+            for(let i in GROUP)
+            {
+                let g = k;
+                while(g < k + 4){
+                    entities.find(val => val.id === indexes[g]).group = GROUP[i];
+                    g++
+                }
+                //entities.slice(k, k+6).forEach(val =>{
+                //    val.group = GROUP[i];
+                //})
+                k = k+4;
+            }
+            return res.json(entities)
+        }
+        else
+        {
+            return res.status(404).send({message:"Неверный запрос"});
+        }
+
     }
     // на фронте?
     // async participantsChangePlaceWithinGroup(req: Request, res: Response, next: any): Promise<Response> {
