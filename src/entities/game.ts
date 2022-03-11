@@ -11,9 +11,9 @@ export class Game extends DTO {
     homeTeam:Participant;
     @ManyToOne(type => Participant, part=>part.asGuest)
     guestTeam:Participant;
-    @Column({default:0})
+    @Column({default:0}) // ГОЛЫ, а не очки
     homeTeamResult: number;
-    @Column({default:0})
+    @Column({default:0}) // ГОЛЫ, а не очки
     guestTeamResult: number;
     @Column({type:"enum",enum:STAGE, default:STAGE.GROUP_STAGE})
     stage:STAGE;

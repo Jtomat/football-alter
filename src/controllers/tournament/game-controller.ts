@@ -84,6 +84,7 @@ export class GameController extends BasicController<GameRepository> {
         return  res.json(STAGE)
     }
 
+    
     // Функция на нахождение кто победил в игре
 
 }

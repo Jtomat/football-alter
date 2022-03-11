@@ -7,6 +7,7 @@ import BasicRepository from "../../core/repositories/basic-repository";
 import {Participant} from "../../entities/participant";
 import {GET_ALL_PREFIX} from "../../core/shared/constants";
 import {GameController} from "./game-controller";
+import {randomInt} from "crypto";
 
 export class ParticipantController extends BasicController<ParticipantRepository> {
     constructor(connection: Connection) {
@@ -16,11 +17,16 @@ export class ParticipantController extends BasicController<ParticipantRepository
         this.getParticipantShortname = this.getParticipantShortname.bind(this)
         this.getTeamsAllocated = this.getTeamsAllocated.bind(this)
         this.getRandomAllocation = this.getRandomAllocation.bind(this)
+        this.getParticipantPoints = this.getParticipantPoints.bind(this)
+        this.getParticipantsComparison = this.getParticipantsComparison.bind(this)
+        this.getParticipantsInGroupComparison = this.getParticipantsInGroupComparison.bind(this)
         this.router.get('/groups', this.groupsGetAll)
         this.router.get('/groups/:key', this.participantByGroup)
         this.router.get(`/:${this.repositoryKey}/shortname/`, this.getParticipantShortname)
         this.router.get('/allocated', this.getTeamsAllocated)
         this.router.get('/randomAllocation',this.getRandomAllocation)
+        this.router.get('/participantsComparison/:key1,key2',this.getParticipantsComparison) // Проверить
+        this.router.get('/participantsInGroupComparison/:key',this.getParticipantsInGroupComparison) // Проверить
         this.initDefault()
     }
 
@@ -94,6 +100,7 @@ export class ParticipantController extends BasicController<ParticipantRepository
         else
         {
             res.status(500).send({message: "Invalid tournament id."});
+            return
         }
         const num = entities.findIndex((value, index) => {if (value === entity) {return index + 1}});
 
@@ -162,9 +169,6 @@ export class ParticipantController extends BasicController<ParticipantRepository
                     entities.find(val => val.id === indexes[g]).group = GROUP[i];
                     g++
                 }
-                //entities.slice(k, k+6).forEach(val =>{
-                //    val.group = GROUP[i];
-                //})
                 k = k+4;
             }
             return res.json(entities)
@@ -173,10 +177,120 @@ export class ParticipantController extends BasicController<ParticipantRepository
         {
             return res.status(404).send({message:"Неверный запрос"});
         }
-
     }
-    // на фронте?
-    // async participantsChangePlaceWithinGroup(req: Request, res: Response, next: any): Promise<Response> {
-    //    return
-    // }
+
+    async participantPoints(participant: Participant) : Promise<number>
+    {
+        let points = 0
+        participant.asHome.forEach(val => {
+            if(val.homeTeam == val.guestTeam){
+                points += 1
+            }
+            if(val.homeTeam > val.guestTeam){
+                points += 3
+            }
+        })
+        participant.asGuest.forEach(val => {
+            if(val.homeTeam == val.guestTeam){
+                points += 1
+            }
+            if(val.homeTeam < val.guestTeam){
+                points += 3
+            }
+        })
+        return points
+    }
+
+    // функция подсчета очков участника за игры в турнире
+    async getParticipantPoints(req: Request, res: Response, next: any): Promise<Response> {
+        const key = Number(req.params.key);
+        if (!key || req.params.keytournament == GET_ALL_PREFIX) {
+            return res.status(500).send({message: "Invalid entity id."});
+        }
+        let entity = await (this._repository as BasicRepository<Participant>)
+            .findOne({where: {id: key}})
+        const points = this.participantPoints(entity)
+        return res.json(points)
+    }
+
+    async getParticipantsComparison(req: Request, res: Response, next: any): Promise<Response> {
+        const key1 = Number(req.params.key1);
+        const key2 = Number(req.params.key2);
+        if (!key1 ||!key2 || req.params.keytournament == GET_ALL_PREFIX) {
+            return res.status(500).send({message: "Invalid entity id."});
+        }
+        let participant1 = await (this._repository as BasicRepository<Participant>)
+            .findOne({where: {id: key1}})
+        let participant2 = await (this._repository as BasicRepository<Participant>)
+            .findOne({where: {id: key1}})
+        return res.json(await this.participantsComparison(participant1, participant2))
+    }
+
+    async getParticipantsInGroupComparison(req: Request, res: Response, next: any): Promise<Response> {
+        const key = String(req.params.key);
+        if (!key || req.params.keytournament == GET_ALL_PREFIX) {
+            return res.status(500).send({message: "Invalid entity id."});
+        }
+        let participants = await (this._repository as BasicRepository<Participant>)
+            .find({where: {group: key}})
+        return res.json(participants.sort((a, b) =>this.participantsComparison(a, b)))
+    }
+
+    // функция сравнения счета двух участников, для ранжирования
+    participantsComparison(participant1: Participant, participant2: Participant): number
+    {
+        console.log(this.participantPoints(participant1), " : ", this.participantPoints(participant2)) // проверить и убрать
+
+        if(this.participantPoints(participant1) == this.participantPoints(participant2)){
+            let goalsScored1 = 0
+            let goalsScored2 = 0
+            let goalsConceded1 = 0
+            let goalsConceded2 = 0
+            participant1.asGuest.forEach(value => {
+                goalsScored1 += value.guestTeamResult
+                goalsConceded1 += value.homeTeamResult
+            })
+            participant1.asHome.forEach(value => {
+                goalsScored1 += value.homeTeamResult
+                goalsConceded1 += value.guestTeamResult
+            })
+            participant2.asGuest.forEach(value => {
+                goalsScored2 += value.guestTeamResult
+                goalsConceded2 += value.homeTeamResult
+            })
+            participant2.asHome.forEach(value => {
+                goalsScored2 += value.homeTeamResult
+                goalsConceded2 += value.guestTeamResult
+            })
+            if(goalsScored1 - goalsConceded1 == goalsScored2 - goalsConceded2){
+                if(goalsScored1 == goalsScored2){
+                    let rnd = randomInt(100)
+                    if(rnd % 2 == 0){
+                        return 1
+                    }
+                    else{
+                        return -1
+                    }
+                }
+                else if(goalsScored1 > goalsScored2){
+                    return 1
+                }
+                else{
+                    return -1
+                }
+            }
+            else if(goalsScored1 - goalsConceded1 > goalsScored2 - goalsConceded2){
+                return 1
+            }
+            else{
+                return -1
+            }
+        }
+        else if(this.participantPoints(participant1) > this.participantPoints(participant2)){
+            return 1
+        }
+        else{
+            return -1
+        }
+    }
 }
