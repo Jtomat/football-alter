@@ -115,7 +115,8 @@ export class ParticipantController extends BasicController<ParticipantRepository
             let allocCount = 0
             for(let i in GROUP)
             {
-                const entity = await (this._repository as BasicRepository<Participant>).find({where: {group: i,
+                const entity = await (this._repository as BasicRepository<Participant>).find({where:
+                        {group: i,
                         tournament: {id: req.params.keytournament}},
                     order:{id: "ASC"}});
             if(entity?.length === 4)
@@ -232,7 +233,7 @@ export class ParticipantController extends BasicController<ParticipantRepository
             return res.status(500).send({message: "Invalid entity id."});
         }
         let participants = await (this._repository as BasicRepository<Participant>)
-            .find({where: {group: key}})
+            .find({where: {group: key, tournament: {id: req.params.keytournament}}})
         return res.json(participants.sort((a, b) =>this.participantsComparison(a, b)))
     }
 
