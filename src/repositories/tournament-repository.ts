@@ -2,15 +2,14 @@ import BasicRepository from "../core/repositories/basic-repository";
 import {Tournament} from "../entities/tournament";
 import {EntityRepository} from "typeorm";
 import {EntityKey} from "../core/models/dto";
-import {GameRepository} from "./game-repository";
 import {GROUP, STAGE} from "../entities/enums";
 import {Game} from "../entities/game";
+import _ from "lodash";
 
 @EntityRepository(Tournament)
 export class TournamentRepository extends BasicRepository<Tournament> {
     _tableName = 'tournament'
     _urlSegment = '/tournaments'
-    private gameRepository:GameRepository;
 
     constructor() {
         super();
@@ -42,5 +41,22 @@ export class TournamentRepository extends BasicRepository<Tournament> {
                 });
         });
         return tournament;
+    }
+
+
+    async getCurrentStage(key: EntityKey): Promise<any> {
+        const tournament = await this.getEntityWithRelations(key);
+        const stageStatus = {};
+        Object.keys(STAGE).forEach(stage=> {
+            let source: Array<Game> = [];
+            if (stage != 'GROUP_STAGE')
+                source = tournament['games'][stage] as Game[];
+            else
+                Object.keys(GROUP).forEach(group => {
+                    source = source.concat(tournament['games'][stage][group] as Game[]);
+                })
+            stageStatus[STAGE[stage]] = _.isEmpty(source.filter(i => !i.finished)) && !_.isEmpty(source)
+        });
+        return stageStatus;
     }
 }

@@ -5,9 +5,7 @@ import {Request, Response} from "express";
 import {GROUP, STAGE} from "../../entities/enums";
 import {GET_ALL_PREFIX} from "../../core/shared/constants";
 import BasicRepository from "../../core/repositories/basic-repository";
-import {Participant} from "../../entities/participant";
 import {Game} from "../../entities/game";
-import {TeamRepository} from "../../repositories/team-repository";
 import {ParticipantRepository} from "../../repositories/participant-repository";
 
 export class GameController extends BasicController<GameRepository> {
@@ -83,8 +81,5 @@ export class GameController extends BasicController<GameRepository> {
     async stagesGetAll(req: Request, res: Response, next: any): Promise<Response> {
         return  res.json(STAGE)
     }
-
-    
-    // Функция на нахождение кто победил в игре
 
 }
