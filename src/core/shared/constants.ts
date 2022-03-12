@@ -44,3 +44,23 @@ export const TYPE_ORM_OPTIONS = {
 export type RouteConfig = {controller: BasicController<BasicRepository<DTO>>, children?: Array<RouteConfig>}
 
 export const GET_ALL_PREFIX = 'all'
+
+export function shuffleArray (array: Array<any>): Array<any> {
+    let i = array.length,
+        j = 0,
+        temp;
+    while (i--){
+        j = Math.floor(Math.random() * (i+1));
+        // swap randomly chosen element with current element
+        temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    return array;
+}
+
+export function defaultCompare(first: any, second: any): -1|0|1 {
+    if(first==second)
+        return 0;
+    return first>second ? 1 : -1;
+}

@@ -6,9 +6,9 @@ import {Participant} from "./participant";
 export class Tournament extends DTO {
     @Column()
     name: string;
-    @Column()
+    @Column({nullable:true})
     startDate: Date;
-    @Column()
+    @Column({nullable:true})
     endDate: Date;
     @OneToMany(type=>Participant, participant=>participant.tournament)
     participants: Participant[]
