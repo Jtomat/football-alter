@@ -5,9 +5,8 @@ import { Request, Response} from "express";
 import {GROUP} from "../../entities/enums";
 import BasicRepository from "../../core/repositories/basic-repository";
 import {Participant} from "../../entities/participant";
-import {defaultCompare, GET_ALL_PREFIX, shuffleArray} from "../../core/shared/constants";
-import {GameController} from "./game-controller";
-import {randomInt} from "crypto";
+import { GET_ALL_PREFIX, shuffleArray} from "../../core/shared/constants";
+import {GameController} from "./game-controller"
 import _ from "lodash";
 
 export class ParticipantController extends BasicController<ParticipantRepository> {

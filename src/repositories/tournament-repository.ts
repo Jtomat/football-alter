@@ -16,7 +16,7 @@ export class TournamentRepository extends BasicRepository<Tournament> {
     }
 
     async getEntityWithRelations(key: EntityKey): Promise<Tournament> {
-        const tournament = (await super.findOne(this.getEntityID(key), {relations:['participants']})) as Tournament;
+        const tournament = (await this.findOne(this.getEntityID(key), {relations:['participants']})) as Tournament;
         tournament['games'] = {};
         let games = []
         for (const parts of tournament.participants) {
@@ -44,7 +44,7 @@ export class TournamentRepository extends BasicRepository<Tournament> {
     }
 
 
-    async getCurrentStage(key: EntityKey): Promise<any> {
+    async getCurrentStage(key: EntityKey): Promise<{[p:string]:boolean|{}}> {
         const tournament = await this.getEntityWithRelations(key);
         const stageStatus = {};
         Object.keys(STAGE).forEach(stage=> {

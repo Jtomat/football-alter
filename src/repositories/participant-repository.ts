@@ -10,6 +10,11 @@ export class ParticipantRepository extends BasicRepository<Participant> {
     _tableName = 'participant'
     _urlSegment = '/participant'
 
+    constructor() {
+        super();
+        this.participantsComparison = this.participantsComparison.bind(this);
+    }
+
     async calculateScore(key: EntityKey): Promise<number> {
         const participant = await this.getEntityWithRelations(key);
         let points = 0
@@ -34,7 +39,7 @@ export class ParticipantRepository extends BasicRepository<Participant> {
 
 
 
-    async participantsComparison(participant1: EntityKey, participant2: EntityKey): Promise<number> {
+    async participantsComparison(participant1: EntityKey, participant2: EntityKey): Promise<-1|0|1> {
         const part1 = await this.findOne({relations:['asHome','asGuest'], where: {id:this.getEntityID(participant1)}});
         const part2 = await this.findOne({relations:['asHome','asGuest'], where: {id:this.getEntityID(participant2)}});
         const part1Score = await this.calculateScore(participant1);

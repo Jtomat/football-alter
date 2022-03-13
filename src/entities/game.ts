@@ -1,8 +1,9 @@
 import {DTO} from "../core/models/dto";
-import {Column, Entity, ManyToOne, OneToMany} from "typeorm";
+import {Column, Entity, ManyToOne, OneToMany, OneToOne} from "typeorm";
 import {Participant} from "./participant";
 import {STAGE} from "./enums";
 import {Event} from "./event";
+import {PlayerInGrid} from "./player-in-grid";
 
 @Entity()
 export class Game extends DTO {
@@ -23,4 +24,6 @@ export class Game extends DTO {
     started:boolean;
     @Column({default:false})
     finished:boolean;
+    @OneToMany(type=>PlayerInGrid, grid=>grid.game)
+    teamGrids: PlayerInGrid[];
 }

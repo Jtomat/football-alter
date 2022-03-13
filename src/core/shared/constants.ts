@@ -64,3 +64,18 @@ export function defaultCompare(first: any, second: any): -1|0|1 {
         return 0;
     return first>second ? 1 : -1;
 }
+
+export async function asyncSort(array: Array<any>, func:(a,b)=>Promise<-1|0|1>) {
+    for (let i = 1; i < array.length; i++) {
+        let current = array[i];
+        let j = i -1;
+        let compRes = await func(current, array[j]);
+        while ( j>=0 && compRes < 0) {
+            array[j+1] = array[j]
+            j--;
+        }
+        array[j+1] = current;
+    }
+    return array;
+}
+
