@@ -2,14 +2,11 @@ import BasicController from "../../core/controllers/basic-controller";
 import {PlayerRepository} from "../../repositories/player-repository";
 import {Connection} from "typeorm";
 import {Request, Response} from "express";
-import * as _ from "lodash";
 import {TeamRepository} from "../../repositories/team-repository";
 import {POSITION} from "../../entities/enums";
 import BasicRepository from "../../core/repositories/basic-repository";
-import {Team} from "../../entities/team";
 import {Player} from "../../entities/player";
 import {GET_ALL_PREFIX} from "../../core/shared/constants";
-import {Participant} from "../../entities/participant";
 
 // TODO: See example
 export class PlayerController extends BasicController<PlayerRepository> {
@@ -28,7 +25,6 @@ export class PlayerController extends BasicController<PlayerRepository> {
     async positionsGetAll(req: Request, res: Response, next: any): Promise<Response> {
         return  res.json(POSITION)
     }
-
 
     async methodGetAll(req: Request, res: Response, next: any): Promise<Response> {
         let entities = []
