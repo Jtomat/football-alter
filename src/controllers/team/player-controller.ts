@@ -7,6 +7,7 @@ import {POSITION} from "../../entities/enums";
 import BasicRepository from "../../core/repositories/basic-repository";
 import {Player} from "../../entities/player";
 import {GET_ALL_PREFIX} from "../../core/shared/constants";
+import {Team} from "../../entities/team";
 
 // TODO: See example
 export class PlayerController extends BasicController<PlayerRepository> {
@@ -46,6 +47,11 @@ export class PlayerController extends BasicController<PlayerRepository> {
             res.status(404).send({message:"Entity with such region doesn't found."});
         }
         return  res.json(entity)
+    }
+    
+    async methodPost(req:Request, res:Response, next:any): Promise<Response>{
+        req.body.team = await this._repository.manager.find(Team,{where:{id:req.params.teamId}})
+        return super.methodPost(req, res, next)
     }
 
     // override example
