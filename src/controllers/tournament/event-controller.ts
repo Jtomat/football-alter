@@ -43,7 +43,6 @@ export class EventController extends BasicController<EventRepository> {
     }
 
     async methodPost(req:Request, res:Response, next:any): Promise<Response>{
-        console.log(req.params)
         req.body.game = await this._repository.manager.findOne(Game,{where:{id:req.params.keygame}})
         return super.methodPost(req, res, next)
     }

@@ -104,7 +104,6 @@ export default class BasicController<T extends BasicRepository<DTO>> {
     /** Basic method of post */
     async methodPost(req: Request, res: Response, next: any): Promise<Response> {
         const entity =  req.body;
-        console.log(req.body)
         return res.json(await this._repository.saveEntity(entity));
     }
 

@@ -198,7 +198,6 @@ export class ParticipantController extends BasicController<ParticipantRepository
     }
 
     async methodPost(req:Request, res:Response, next:any): Promise<Response>{
-        console.log(req.params)
         req.body.tournament = await this._repository.manager.findOne(Tournament,{where:{id:req.params.keytournament}})
         req.body.team = await this._repository.manager.findOne(Team,{where:{id:req.body.teamId}})
         return super.methodPost(req, res, next)

@@ -50,8 +50,6 @@ export class PlayerController extends BasicController<PlayerRepository> {
     }
 
     async methodPost(req:Request, res:Response, next:any): Promise<Response>{
-        console.log(req.params)
-        req.body.teamId = req.params.keyteam
         req.body.team = await this._repository.manager.findOne(Team,{where:{id:req.params.keyteam}})
         return super.methodPost(req, res, next)
     }
