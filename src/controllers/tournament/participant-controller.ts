@@ -8,6 +8,8 @@ import {Participant} from "../../entities/participant";
 import { GET_ALL_PREFIX, shuffleArray} from "../../core/shared/constants";
 import {GameController} from "./game-controller"
 import _ from "lodash";
+import {Team} from "../../entities/team";
+import {Tournament} from "../../entities/tournament";
 
 export class ParticipantController extends BasicController<ParticipantRepository> {
     _repository: ParticipantRepository;
@@ -193,6 +195,13 @@ export class ParticipantController extends BasicController<ParticipantRepository
         let participant2 = await this._repository
             .findOne({where: {id: key2}})
         return res.json(await this._repository.participantsComparison(participant1, participant2))
+    }
+
+    async methodPost(req:Request, res:Response, next:any): Promise<Response>{
+        console.log(req.params)
+        req.body.tournament = await this._repository.manager.findOne(Tournament,{where:{id:req.params.keytournament}})
+        req.body.team = await this._repository.manager.findOne(Team,{where:{id:req.body.teamId}})
+        return super.methodPost(req, res, next)
     }
 
     async getParticipantsInGroupComparison(req: Request, res: Response, next: any): Promise<Response> {

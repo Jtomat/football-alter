@@ -11,7 +11,7 @@ export class Participant extends DTO {
     tournament: Tournament;
     @ManyToOne(type=>Team, team=>team.participants)
     team: Team
-    @Column({type:"enum", enum:GROUP})
+    @Column({type:"enum", enum:GROUP, nullable:true})
     group: GROUP;
     @OneToMany(type => Game, game=>game.guestTeam)
     asGuest: Game[];

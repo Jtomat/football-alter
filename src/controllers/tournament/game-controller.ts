@@ -2,7 +2,7 @@ import BasicController from "../../core/controllers/basic-controller";
 import {GameRepository} from "../../repositories/game-repository";
 import {Connection} from "typeorm";
 import {Request, Response} from "express";
-import {GROUP, STAGE} from "../../entities/enums";
+import {EVENT, GROUP, STAGE} from "../../entities/enums";
 import {GET_ALL_PREFIX} from "../../core/shared/constants";
 import BasicRepository from "../../core/repositories/basic-repository";
 import {Game} from "../../entities/game";
@@ -15,8 +15,10 @@ export class GameController extends BasicController<GameRepository> {
         this.stagesGetAll = this.stagesGetAll.bind(this);
         this.getAllOfStage = this.getAllOfStage.bind(this);
         this.createGroupGames = this.createGroupGames.bind(this)
+        this.eventsTypes = this.eventsTypes.bind(this)
         this.router.get('/stages', this.stagesGetAll);
         this.router.get('/stages/:stage', this.getAllOfStage);
+        this.router.get('/eventsTypes', this.eventsTypes)
         this.initDefault()
     }
 
@@ -95,9 +97,18 @@ export class GameController extends BasicController<GameRepository> {
         return res.json(games);
     }
 
+    async methodPost(req:Request, res:Response, next:any): Promise<Response>{
+        req.body.homeTeam = await this._repository.manager.findOne(Participant,{where:{id:req.body.homeTeamId}})
+        req.body.guestTeam = await this._repository.manager.findOne(Participant,{where:{id:req.body.guestTeamId}})
+        return super.methodPost(req, res, next)
+    }
+
     async stagesGetAll(req: Request, res: Response, next: any): Promise<Response> {
         return res.json(STAGE)
     }
 
+    async eventsTypes(req: Request, res: Response, next: any): Promise<Response> {
+        return res.json(EVENT)
+    }
 }
 
