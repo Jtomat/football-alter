@@ -23,11 +23,6 @@ export class PlayerController extends BasicController<PlayerRepository> {
         this.initDefault()
     }
 
-    async methodPost(req: Request, res: Response, next: any): Promise<Response> {
-        req.body.team = await this._repository.manager.findOne(Team, {where:{id:req.params.keyteam}});
-        return  super.methodPost(req, res, next);
-    }
-
 
     async positionsGetAll(req: Request, res: Response, next: any): Promise<Response> {
         return  res.json(POSITION)
