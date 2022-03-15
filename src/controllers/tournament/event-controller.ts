@@ -7,7 +7,6 @@ import BasicRepository from "../../core/repositories/basic-repository";
 import {GameRepository} from "../../repositories/game-repository";
 import {Event} from "../../entities/event";
 import {Game} from "../../entities/game";
-import {Participant} from "../../entities/participant";
 
 export class EventController extends BasicController<EventRepository> {
     protected gameRepository: GameRepository;

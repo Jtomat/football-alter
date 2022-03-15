@@ -14,7 +14,7 @@ const loadTournament = (connection: Connection): Router => {
     const event = new EventController(connection);
     const router = RouterBuilder.build([{
         controller: tournaments,
-        children: [{controller:games, children:[{controller:event}]}, {controller:part}, ]
+        children: [{controller:part}, {controller:games, children:[{controller:event}]},  ]
     }])
     return router;
 }
