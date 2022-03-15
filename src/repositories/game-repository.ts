@@ -2,12 +2,14 @@ import BasicRepository from "../core/repositories/basic-repository";
 import {Game} from "../entities/game";
 import {EntityRepository} from "typeorm";
 import {TournamentRepository} from "./tournament-repository";
-import {GROUP, STAGE} from "../entities/enums";
+import {GROUP, STAGE, POSITION} from "../entities/enums";
 import {Tournament} from "../entities/tournament";
 import {Participant} from "../entities/participant";
 import {ParticipantRepository} from "./participant-repository";
 import {EntityKey} from "../core/models/dto"
 import {asyncSort} from "../core/shared/constants";
+import {Player} from "../entities/player";
+import {PlayerInGrid} from "../entities/player-in-grid";
 
 @EntityRepository(Game)
 export class GameRepository extends BasicRepository<Game> {
@@ -36,6 +38,31 @@ export class GameRepository extends BasicRepository<Game> {
             }
         }
         return saveResult;
+    }
+
+    /**
+     * Создать для игры стартовую сетку
+     * @param game
+     */
+    private async assignPlayers(game: Game): Promise<void> {
+        const getPlayersInGrid = async (isHomeTeam: boolean): Promise<PlayerInGrid[]> => {
+            const teamId = isHomeTeam ? game.homeTeam.id : game.guestTeam.id;
+            const players = await this.manager.find(Player, {
+                relations: [],
+                where: {team: {id: teamId}}
+            });
+            const goalkeepers = players.filter(p => p.position == POSITION.GOALKEEPER);
+            const nonGoalkeepers = players.filter(p => p.position != POSITION.GOALKEEPER);
+            return goalkeepers.slice(0, 1).concat(nonGoalkeepers.slice(0, 10)).map(p => {
+                const playerInGrid = new PlayerInGrid();
+                playerInGrid.game = game;
+                playerInGrid.player = p;
+                playerInGrid.currentPosition = p.position
+                playerInGrid.isHomeTeam = isHomeTeam;
+                return playerInGrid;
+            });
+        }
+        game.teamGrids = (await getPlayersInGrid(true)).concat(await getPlayersInGrid(false));
     }
 
     async createGamesFrom(stage: STAGE, tournament: Tournament): Promise<boolean> {
