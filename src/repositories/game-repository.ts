@@ -15,6 +15,7 @@ export class GameRepository extends BasicRepository<Game> {
     _urlSegment = '/games'
 
     async getEntityWithRelations(key: EntityKey): Promise<Game> {
+
         return this.findOne({
             relations: ['homeTeam', 'guestTeam', 'events', 'homeTeam.tournament',
                 'guestTeam.tournament', 'teamGrids'], where: {id: this.getEntityID(key)}
@@ -22,6 +23,7 @@ export class GameRepository extends BasicRepository<Game> {
     }
 
     async saveEntity(entity: Game): Promise<Game> {
+        console.log(entity)
         let saveResult = (await this.save([entity], {}))[0];
         if (saveResult.finished) {
             saveResult = await this.findOne({
@@ -41,35 +43,29 @@ export class GameRepository extends BasicRepository<Game> {
     async createGamesFrom(stage: STAGE, tournament: Tournament): Promise<boolean> {
         switch (stage) {
             case STAGE.ROUND_OF_16:
-                return this.createSemiFinal(tournament.id);
-                break;
-            case STAGE.QUARTER_FINAL:
-                return this.createFinal(tournament.id);
-                break;
-            case STAGE.SEMI_FINAL:
                 return this.createQuarterFinal(tournament.id);
-                break;
+            case STAGE.QUARTER_FINAL:
+                return this.createSemiFinal(tournament.id);
+            case STAGE.SEMI_FINAL:
+                return this.createFinal(tournament.id);
             case STAGE.FINAL:
                 return true;
-                break;
             case STAGE.GROUP_STAGE:
                 return this.createRoundOf16(tournament.id);
-                break;
             default:
                 throw new Error('Unexpected stage token');
         }
-        return false;
     }
 
     private async createFinal(tournamentID: number): Promise<boolean> {
         const roundQuarter = await this.find({
             relations: ['homeTeam', 'guestTeam', 'homeTeam.tournament'],
-            where: {stage: STAGE.QUARTER_FINAL, homeTeam: {tournament: {id: tournamentID}}}
+            where: {stage: STAGE.SEMI_FINAL, homeTeam: {tournament: {id: tournamentID}}}
         });
 
         const game = new Game();
         game.homeTeam = await this.getWinner(roundQuarter[0]);
-        game.guestTeam = await this.getWinner(roundQuarter[0]);
+        game.guestTeam = await this.getWinner(roundQuarter[1]);
         game.stage = STAGE.FINAL;
 
         await this.save([game]);
@@ -78,53 +74,53 @@ export class GameRepository extends BasicRepository<Game> {
     }
 
     private async createQuarterFinal(tournamentID: number): Promise<boolean> {
-        const roundSemi = await this.find({
+        const roundOF16 = await this.find({
             relations: ['homeTeam', 'guestTeam', 'homeTeam.tournament'],
-            where: {stage: STAGE.SEMI_FINAL, homeTeam: {tournament: {id: tournamentID}}}
+            where: {stage: STAGE.ROUND_OF_16, homeTeam: {tournament: {id: tournamentID}}}
         });
 
         const gameQF1 = new Game();
-        gameQF1.homeTeam = await this.getWinner(roundSemi[0]);
-        gameQF1.guestTeam = await this.getWinner(roundSemi[1]);
-        gameQF1.stage = STAGE.FINAL;
+        gameQF1.homeTeam = await this.getWinner(roundOF16[0])
+        gameQF1.guestTeam = await this.getWinner(roundOF16[2]);
+        gameQF1.stage = STAGE.QUARTER_FINAL;
 
         const gameQF2 = new Game();
-        gameQF2.homeTeam = await this.getWinner(roundSemi[2]);
-        gameQF2.guestTeam = await this.getWinner(roundSemi[3]);
-        gameQF2.stage = STAGE.FINAL;
+        gameQF2.homeTeam = await this.getWinner(roundOF16[1]);
+        gameQF2.guestTeam = await this.getWinner(roundOF16[5]);
+        gameQF2.stage = STAGE.QUARTER_FINAL;
 
-        await this.save([gameQF1, gameQF2]);
+        const gameQF3 = new Game();
+        gameQF3.homeTeam = await this.getWinner(roundOF16[4]);
+        gameQF3.guestTeam = await this.getWinner(roundOF16[6]);
+        gameQF3.stage = STAGE.QUARTER_FINAL;
+
+        const gameQF4 = new Game();
+        gameQF4.homeTeam = await this.getWinner(roundOF16[3]);
+        gameQF4.guestTeam = await this.getWinner(roundOF16[7]);
+        gameQF4.stage = STAGE.QUARTER_FINAL;
+
+        await this.save([gameQF1, gameQF2, gameQF3, gameQF4]);
 
         return true;
     }
 
     private async createSemiFinal(tournamentID: number): Promise<boolean> {
-        const roundOF16 = await this.find({
+        const roundSemi = await this.find({
             relations: ['homeTeam', 'guestTeam', 'homeTeam.tournament'],
-            where: {stage: STAGE.ROUND_OF_16, homeTeam: {tournament: {id: tournamentID}}}
-        })
+            where: {stage: STAGE.QUARTER_FINAL, homeTeam: {tournament: {id: tournamentID}}}
+        });
 
         const gameQF1 = new Game();
-        gameQF1.homeTeam = await this.getWinner(roundOF16[0])
-        gameQF1.guestTeam = await this.getWinner(roundOF16[2]);
+        gameQF1.homeTeam = await this.getWinner(roundSemi[0]);
+        gameQF1.guestTeam = await this.getWinner(roundSemi[1]);
         gameQF1.stage = STAGE.SEMI_FINAL;
 
         const gameQF2 = new Game();
-        gameQF2.homeTeam = await this.getWinner(roundOF16[1]);
-        gameQF2.guestTeam = await this.getWinner(roundOF16[5]);
+        gameQF2.homeTeam = await this.getWinner(roundSemi[2]);
+        gameQF2.guestTeam = await this.getWinner(roundSemi[3]);
         gameQF2.stage = STAGE.SEMI_FINAL;
 
-        const gameQF3 = new Game();
-        gameQF3.homeTeam = await this.getWinner(roundOF16[4]);
-        gameQF3.guestTeam = await this.getWinner(roundOF16[6]);
-        gameQF3.stage = STAGE.SEMI_FINAL;
-
-        const gameQF4 = new Game();
-        gameQF4.homeTeam = await this.getWinner(roundOF16[3]);
-        gameQF4.guestTeam = await this.getWinner(roundOF16[7]);
-        gameQF4.stage = STAGE.SEMI_FINAL;
-
-        await this.save([gameQF1, gameQF2, gameQF3, gameQF4]);
+        await this.save([gameQF1, gameQF2]);
 
         return true;
     }
@@ -255,7 +251,7 @@ export class GameRepository extends BasicRepository<Game> {
             game = key as Game;
         else
             game = await this.getEntityWithRelations(key);
-        if (game.homeTeamResult > game.homeTeamResult)
+        if (game.homeTeamResult > game.guestTeamResult)
             return game.homeTeam;
         else return game.guestTeam;
     }

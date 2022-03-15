@@ -17,7 +17,7 @@ export class TournamentController extends BasicController<TournamentRepository> 
         const id = Number(req.params[this.repositoryKey]);
         if(_.isNaN(id))
             res.status(500).send({message: "Invalid entity id."});
-        return res.json(this._repository.getCurrentStage(id));
+        return res.json(await this._repository.getCurrentStage(id));
     }
 
 }
