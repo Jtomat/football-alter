@@ -9,7 +9,7 @@ import {Game} from "../../entities/game";
 import {Participant} from "../../entities/participant";
 
 export class GameController extends BasicController<GameRepository> {
-
+    _repository:GameRepository;
     constructor(connection: Connection) {
         super(connection, GameRepository, false);
         this.stagesGetAll = this.stagesGetAll.bind(this);
@@ -55,36 +55,42 @@ export class GameController extends BasicController<GameRepository> {
                 entity1.homeTeam = participants[0]
                 entity1.guestTeam = participants[1]
                 entity1.stage = STAGE.GROUP_STAGE
+                await this._repository.assignPlayers(entity1);
                 await this._repository.saveEntity(entity1)
 
                 let entity2 = new Game();
                 entity2.homeTeam = participants[2]
                 entity2.guestTeam = participants[3]
                 entity2.stage = STAGE.GROUP_STAGE
+                await this._repository.assignPlayers(entity2);
                 await this._repository.saveEntity(entity2)
 
                 let entity3 = new Game();
                 entity3.homeTeam = participants[1]
                 entity3.guestTeam = participants[3]
                 entity3.stage = STAGE.GROUP_STAGE
+                await this._repository.assignPlayers(entity3);
                 await this._repository.saveEntity(entity3)
 
                 let entity4 = new Game();
                 entity4.homeTeam = participants[0]
                 entity4.guestTeam = participants[2]
                 entity4.stage = STAGE.GROUP_STAGE
+                await this._repository.assignPlayers(entity4);
                 await this._repository.saveEntity(entity4)
 
                 let entity5 = new Game();
                 entity5.homeTeam = participants[3]
                 entity5.guestTeam = participants[0]
                 entity5.stage = STAGE.GROUP_STAGE
+                await this._repository.assignPlayers(entity5);
                 await this._repository.saveEntity(entity5)
 
                 let entity6 = new Game();
                 entity6.homeTeam = participants[1]
                 entity6.guestTeam = participants[2]
                 entity6.stage = STAGE.GROUP_STAGE
+                await this._repository.assignPlayers(entity6);
                 await this._repository.saveEntity(entity6)
             }
     }

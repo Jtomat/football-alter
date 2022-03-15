@@ -17,7 +17,6 @@ export class GameRepository extends BasicRepository<Game> {
     _urlSegment = '/games'
 
     async getEntityWithRelations(key: EntityKey): Promise<Game> {
-
         return this.findOne({
             relations: ['homeTeam', 'guestTeam', 'events', 'homeTeam.tournament',
                 'guestTeam.tournament', 'teamGrids'], where: {id: this.getEntityID(key)}
@@ -25,7 +24,6 @@ export class GameRepository extends BasicRepository<Game> {
     }
 
     async saveEntity(entity: Game): Promise<Game> {
-        console.log(entity)
         let saveResult = (await this.save([entity], {}))[0];
         if (saveResult.finished) {
             saveResult = await this.findOne({
@@ -46,7 +44,7 @@ export class GameRepository extends BasicRepository<Game> {
      * Создать для игры стартовую сетку
      * @param game
      */
-    private async assignPlayers(game: Game): Promise<void> {
+    async assignPlayers(game: Game): Promise<void> {
         const getPlayersInGrid = async (isHomeTeam: boolean): Promise<PlayerInGrid[]> => {
             const teamId = isHomeTeam ? game.homeTeam.id : game.guestTeam.id;
             const players = await this.manager.find(Player, {
@@ -93,6 +91,7 @@ export class GameRepository extends BasicRepository<Game> {
         const game = new Game();
         game.homeTeam = await this.getWinner(roundQuarter[0]);
         game.guestTeam = await this.getWinner(roundQuarter[1]);
+        await this.assignPlayers(game);
         game.stage = STAGE.FINAL;
 
         await this.save([game]);
@@ -110,21 +109,25 @@ export class GameRepository extends BasicRepository<Game> {
         gameQF1.homeTeam = await this.getWinner(roundOF16[0])
         gameQF1.guestTeam = await this.getWinner(roundOF16[2]);
         gameQF1.stage = STAGE.QUARTER_FINAL;
+        await this.assignPlayers(gameQF1);
 
         const gameQF2 = new Game();
         gameQF2.homeTeam = await this.getWinner(roundOF16[1]);
         gameQF2.guestTeam = await this.getWinner(roundOF16[5]);
         gameQF2.stage = STAGE.QUARTER_FINAL;
+        await this.assignPlayers(gameQF2);
 
         const gameQF3 = new Game();
         gameQF3.homeTeam = await this.getWinner(roundOF16[4]);
         gameQF3.guestTeam = await this.getWinner(roundOF16[6]);
         gameQF3.stage = STAGE.QUARTER_FINAL;
+        await this.assignPlayers(gameQF3);
 
         const gameQF4 = new Game();
         gameQF4.homeTeam = await this.getWinner(roundOF16[3]);
         gameQF4.guestTeam = await this.getWinner(roundOF16[7]);
         gameQF4.stage = STAGE.QUARTER_FINAL;
+        await this.assignPlayers(gameQF4);
 
         await this.save([gameQF1, gameQF2, gameQF3, gameQF4]);
 
@@ -141,11 +144,13 @@ export class GameRepository extends BasicRepository<Game> {
         gameQF1.homeTeam = await this.getWinner(roundSemi[0]);
         gameQF1.guestTeam = await this.getWinner(roundSemi[1]);
         gameQF1.stage = STAGE.SEMI_FINAL;
+        await this.assignPlayers(gameQF1);
 
         const gameQF2 = new Game();
         gameQF2.homeTeam = await this.getWinner(roundSemi[2]);
         gameQF2.guestTeam = await this.getWinner(roundSemi[3]);
         gameQF2.stage = STAGE.SEMI_FINAL;
+        await this.assignPlayers(gameQF2);
 
         await this.save([gameQF1, gameQF2]);
 
@@ -197,41 +202,49 @@ export class GameRepository extends BasicRepository<Game> {
         gameAF1.homeTeam = groupA[1];
         gameAF1.guestTeam = groupC[1];
         gameAF1.stage = STAGE.ROUND_OF_16;
+        await this.assignPlayers(gameAF1);
 
         const gameAF2 = new Game();
         gameAF2.homeTeam = groupB[0];
         gameAF2.guestTeam = getGroupGuest(guests[1])
         gameAF2.stage = STAGE.ROUND_OF_16;
+        await this.assignPlayers(gameAF2);
 
         const gameAF3 = new Game();
         gameAF3.homeTeam = groupD[0];
         gameAF3.guestTeam = getGroupGuest(guests[3])
         gameAF3.stage = STAGE.ROUND_OF_16;
+        await this.assignPlayers(gameAF3);
 
         const gameAF4 = new Game();
         gameAF4.homeTeam = groupA[0];
         gameAF4.guestTeam = getGroupGuest(guests[0])
         gameAF4.stage = STAGE.ROUND_OF_16;
+        await this.assignPlayers(gameAF4);
 
         const gameAF5 = new Game();
         gameAF5.homeTeam = groupC[0];
         gameAF5.guestTeam = getGroupGuest(guests[2]);
         gameAF5.stage = STAGE.ROUND_OF_16;
+        await this.assignPlayers(gameAF5);
 
         const gameAF6 = new Game();
         gameAF6.homeTeam = groupF[0];
         gameAF6.guestTeam = groupE[1];
         gameAF6.stage = STAGE.ROUND_OF_16;
+        await this.assignPlayers(gameAF6);
 
         const gameAF7 = new Game();
         gameAF7.homeTeam = groupE[0];
         gameAF7.guestTeam = groupD[1];
         gameAF7.stage = STAGE.ROUND_OF_16;
+        await this.assignPlayers(gameAF7);
 
         const gameAF8 = new Game();
         gameAF8.homeTeam = groupB[1];
         gameAF8.guestTeam = groupF[1];
         gameAF8.stage = STAGE.ROUND_OF_16;
+        await this.assignPlayers(gameAF8);
 
         await this.save([gameAF1, gameAF2, gameAF3, gameAF4, gameAF5, gameAF6, gameAF7, gameAF8]);
         return true;
