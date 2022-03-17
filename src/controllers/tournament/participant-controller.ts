@@ -145,7 +145,7 @@ export class ParticipantController extends BasicController<ParticipantRepository
             return res.status(404).send({message: "Entity with such tournamentId doesn't found."});
         }
 
-        return res.send({message: "No"});
+        return res.json({message: "No"});
     }
 
     async getRandomAllocation(req: Request, res: Response, next: any): Promise<Response> {
