@@ -31,7 +31,6 @@ export class GameController extends BasicController<GameRepository> {
                     where: {guestTeam: {tournament: {id: req.params.keytournament}}}
                 })
         } else {
-
             entities = await (this._repository as BasicRepository<Game>).getAllEntities()
         }
         return res.json(entities);

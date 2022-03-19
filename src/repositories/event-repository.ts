@@ -7,3 +7,4 @@ export class EventRepository extends BasicRepository<Event> {
     _tableName='event'
     _urlSegment='/event'
 }
+

@@ -23,7 +23,7 @@ export class TournamentRepository extends BasicRepository<Tournament> {
             const game = (await this.manager.find(Game,
                 {
                     relations:['guestTeam','homeTeam','guestTeam.team','homeTeam.team'],
-                    where: {guestTeam:parts.id}
+                    where: {guestTeam:{id:parts.id},}
                 }));
             if(game)
                 games = games.concat(game);
